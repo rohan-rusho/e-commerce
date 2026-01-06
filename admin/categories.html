@@ -2,73 +2,76 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Categories - Admin</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Categories - Admin</title>
 
-    <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="../css/components.css">
-    <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="admin.css">
 </head>
 
 <body>
-    <div class="admin-layout">
-        <aside class="admin-sidebar">
-            <div class="admin-logo">
-                <h2 style="color: var(--color-primary); margin: 0;">🌿 GreenMart</h2>
-                <p style="font-size: 0.875rem; color: var(--color-gray-600); margin: 0.25rem 0 0 0;">Admin Panel</p>
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-logo">
+        <h2 style="color: var(--color-primary); margin: 0;">🌿 GreenMart</h2>
+        <p style="font-size: 0.875rem; color: var(--color-gray-600); margin: 0.25rem 0 0 0;">Admin Panel</p>
+      </div>
+
+      <nav class="admin-nav">
+        <a href="dashboard.html" class="admin-nav-link">📊 Dashboard</a>
+        <a href="products.html" class="admin-nav-link">📦 Products</a>
+        <a href="orders.html" class="admin-nav-link">🛒 Orders</a>
+        <a href="categories.html" class="admin-nav-link active">🏷️ Categories</a>
+        <a href="#" class="admin-nav-link" onclick="logout()">🚪 Logout</a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <div class="admin-header">
+        <h1 style="margin: 0;">Category Management</h1>
+      </div>
+
+      <div class="stats-grid" id="categories-stats">
+      </div>
+
+      <div style="margin-top: var(--spacing-2xl);">
+        <h2 style="margin-bottom: var(--spacing-xl);">All Categories</h2>
+        <div id="categories-list"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../data/products.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/productService.js"></script>
+
+  <script>
+    if (!storage.isAdminLoggedIn()) window.location.href = 'login.html';
+
+    productService.initialize();
+    const categories = productService.getCategories();
+
+    // Render Category Stats
+    const icons = ['📱', '👗', '🏠', '💄', '⚽', '📚', '🎮', '🚗'];
+    const statsGrid = document.getElementById('categories-stats');
+    if (statsGrid) {
+      statsGrid.innerHTML = categories.map((cat, idx) => `
+            <div class="stat-card">
+                <div class="stat-icon">${icons[idx] || '📦'}</div>
+                <div class="stat-value">${cat.name}</div>
+                <div class="stat-label">${cat.subcategories.length} Subcategories</div>
             </div>
+        `).join('');
+    }
 
-            <nav class="admin-nav">
-                <a href="dashboard.html" class="admin-nav-link">📊 Dashboard</a>
-                <a href="products.html" class="admin-nav-link">📦 Products</a>
-                <a href="orders.html" class="admin-nav-link">🛒 Orders</a>
-                <a href="categories.html" class="admin-nav-link active">🏷️ Categories</a>
-                <a href="#" class="admin-nav-link" onclick="logout()">🚪 Logout</a>
-            </nav>
-        </aside>
+    const categoriesList = document.getElementById('categories-list');
+    categoriesList.innerHTML = categories.map(cat => {
+      const productsInCategory = productService.products.filter(p => p.category === cat.name).length;
 
-        <main class="admin-main">
-            <div class="admin-header">
-                <h1 style="margin: 0;">Category Management</h1>
-            </div>
-
-            <div class="stats-grid">
-                ${window.ECOMMERCE_DATA ? window.ECOMMERCE_DATA.categories.map((cat, idx) => {
-                const icons = ['📱', '👗', '🏠', '💄', '⚽', '📚', '🎮', '🚗'];
-                return `
-                <div class="stat-card">
-                    <div class="stat-icon">${icons[idx] || '📦'}</div>
-                    <div class="stat-value">${cat.name}</div>
-                    <div class="stat-label">${cat.subcategories.length} Subcategories</div>
-                </div>
-                `;
-                }).join('') : ''}
-            </div>
-
-            <div style="margin-top: var(--spacing-2xl);">
-                <h2 style="margin-bottom: var(--spacing-xl);">All Categories</h2>
-                <div id="categories-list"></div>
-            </div>
-        </main>
-    </div>
-
-    <script src="../data/products.js"></script>
-    <script src="../js/utils.js"></script>
-    <script src="../js/storage.js"></script>
-    <script src="../js/productService.js"></script>
-
-    <script>
-        if (!storage.isAdminLoggedIn()) window.location.href = 'login.html';
-
-        productService.initialize();
-        const categories = productService.getCategories();
-
-        const categoriesList = document.getElementById('categories-list');
-        categoriesList.innerHTML = categories.map(cat => {
-            const productsInCategory = productService.products.filter(p => p.category === cat.name).length;
-
-            return `
+      return `
         <div class="data-table" style="margin-bottom: var(--spacing-xl);">
           <table>
             <thead>
@@ -82,11 +85,11 @@
             </thead>
             <tbody>
               ${cat.subcategories.map(subcat => {
-                const productsInSubcat = productService.products.filter(p =>
-                    p.category === cat.name && p.subcategory === subcat
-                ).length;
+        const productsInSubcat = productService.products.filter(p =>
+          p.category === cat.name && p.subcategory === subcat
+        ).length;
 
-                return `
+        return `
                   <tr>
                     <td>${subcat}</td>
                     <td style="text-align: right;">
@@ -97,20 +100,20 @@
                     </td>
                   </tr>
                 `;
-            }).join('')}
+      }).join('')}
             </tbody>
           </table>
         </div>
       `;
-        }).join('');
+    }).join('');
 
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                storage.clearAdminSession();
-                window.location.href = 'login.html';
-            }
-        }
-    </script>
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        storage.clearAdminSession();
+        window.location.href = 'login.html';
+      }
+    }
+  </script>
 </body>
 
 </html>
