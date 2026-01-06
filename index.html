@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Premium online shopping in Bangladesh. Browse 1000+ products with cash on delivery. Fashion, electronics, home & living, beauty and more.">
+    <meta name="keywords" content="online shopping Bangladesh, ecommerce, cash on delivery, online store">
+    <title>GreenMart - Premium Online Shopping in Bangladesh</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        /* Additional styles specific to homepage */
+        .hero-slider {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--spacing-3xl);
+        }
+
+        .hero-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity var(--transition-slow);
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-darker));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-white);
+        }
+
+        .hero-slide.active {
+            opacity: 1;
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 800px;
+            padding: var(--spacing-xl);
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            margin-bottom: var(--spacing-lg);
+            color: var(--color-white);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-xl);
+            opacity: 0.95;
+        }
+
+        .slider-dots {
+            position: absolute;
+            bottom: var(--spacing-xl);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: var(--spacing-sm);
+            z-index: 10;
+        }
+
+        .slider-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .slider-dot.active {
+            background: var(--color-white);
+            transform: scale(1.3);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: var(--spacing-3xl);
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: var(--spacing-md);
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: var(--color-primary);
+            border-radius: var(--radius-full);
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-3xl);
+        }
+
+        .category-card {
+            background: var(--color-white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-2xl);
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-base);
+            cursor: pointer;
+        }
+
+        .category-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .category-icon {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .category-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-gray-900);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header id="header"></header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Slider -->
+        <section class="container" style="padding-top: 2rem;">
+            <div class="hero-slider" id="hero-slider">
+                <div class="hero-slide active">
+                    <div class="hero-content">
+                        <h1 class="hero-title">Welcome to GreenMart</h1>
+                        <p class="hero-subtitle">Premium Quality Products at Your Doorstep</p>
+                        <a href="products.html" class="btn btn-accent btn-lg">Shop Now</a>
+                    </div>
+                </div>
+                <div class="hero-slide">
+                    <div class="hero-content">
+                        <h1 class="hero-title">1000+ Products Available</h1>
+                        <p class="hero-subtitle">Fashion, Electronics, Home & More</p>
+                        <a href="products.html" class="btn btn-accent btn-lg">Browse All</a>
+                    </div>
+                </div>
+                <div class="hero-slide">
+                    <div class="hero-content">
+                        <h1 class="hero-title">Cash on Delivery Available</h1>
+                        <p class="hero-subtitle">Shop with Confidence</p>
+                        <a href="products.html" class="btn btn-accent btn-lg">Start Shopping</a>
+                    </div>
+                </div>
+                <div class="slider-dots" id="slider-dots"></div>
+            </div>
+        </section>
+
+        <!-- Categories -->
+        <section class="container">
+            <div class="section-header">
+                <h2 class="section-title">Shop by Category</h2>
+                <p>Explore our wide range of premium products</p>
+            </div>
+            <div class="categories-grid" id="categories-grid"></div>
+        </section>
+
+        <!-- Featured Products -->
+        <section class="container">
+            <div class="section-header">
+                <h2 class="section-title">Featured Products</h2>
+                <p>Handpicked selections just for you</p>
+            </div>
+            <div class="grid grid-cols-4 gap-lg" id="featured-products"></div>
+        </section>
+
+        <!-- Best Selling -->
+        <section class="container" style="margin-top: 4rem;">
+            <div class="section-header">
+                <h2 class="section-title">Best Sellers</h2>
+                <p>Most popular products this month</p>
+            </div>
+            <div class="grid grid-cols-4 gap-lg" id="bestselling-products"></div>
+        </section>
+
+        <!-- New Arrivals -->
+        <section class="container" style="margin-top: 4rem; margin-bottom: 4rem;">
+            <div class="section-header">
+                <h2 class="section-title">New Arrivals</h2>
+                <p>Just landed - check out our latest products</p>
+            </div>
+            <div class="grid grid-cols-4 gap-lg" id="new-arrivals"></div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer id="footer"></footer>
+
+    <!-- Scripts -->
+    <script src="data/products.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/productService.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        // Initialize product service
+        productService.initialize();
+
+        // Render categories
+        const categoriesGrid = document.getElementById('categories-grid');
+        const categoryIcons = {
+            'Electronics': '📱',
+            'Fashion': '👗',
+            'Home & Living': '🏠',
+            'Beauty & Health': '💄',
+            'Sports & Outdoors': '⚽',
+            'Books & Media': '📚',
+            'Toys & Games': '🎮',
+            'Automotive': '🚗'
+        };
+
+        const categories = productService.getCategories();
+        categoriesGrid.innerHTML = categories.map(cat => `
+      <div class="category-card" onclick="window.location.href='products.html?category=${encodeURIComponent(cat.name)}'">
+        <div class="category-icon">${categoryIcons[cat.name] || '📦'}</div>
+        <h3 class="category-name">${cat.name}</h3>
+      </div>
+    `).join('');
+
+        // Render featured products
+        const featured = productService.getFeaturedProducts(8);
+        document.getElementById('featured-products').innerHTML = featured.map(product => renderProductCard(product)).join('');
+
+        // Render best selling
+        const bestSelling = productService.getBestSellingProducts(8);
+        document.getElementById('bestselling-products').innerHTML = bestSelling.map(product => renderProductCard(product)).join('');
+
+        // Render new arrivals
+        const newArrivals = productService.getNewArrivals(8);
+        document.getElementById('new-arrivals').innerHTML = newArrivals.map(product => renderProductCard(product)).join('');
+
+        // Hero slider
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.hero-slide');
+        const dotsContainer = document.getElementById('slider-dots');
+
+        // Create dots
+        slides.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.className = 'slider-dot' + (index === 0 ? ' active' : '');
+            dot.onclick = () => goToSlide(index);
+            dotsContainer.appendChild(dot);
+        });
+
+        function goToSlide(index) {
+            slides[currentSlide].classList.remove('active');
+            document.querySelectorAll('.slider-dot')[currentSlide].classList.remove('active');
+
+            currentSlide = index;
+
+            slides[currentSlide].classList.add('active');
+            document.querySelectorAll('.slider-dot')[currentSlide].classList.add('active');
+        }
+
+        function nextSlide() {
+            goToSlide((currentSlide + 1) % slides.length);
+        }
+
+        // Auto-advance slider
+        setInterval(nextSlide, 5000);
+    </script>
+</body>
+
+</html>

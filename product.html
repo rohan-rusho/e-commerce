@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Detail - GreenMart</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .product-detail-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-3xl);
+            padding: var(--spacing-3xl) 0;
+        }
+
+        .product-gallery {
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+        }
+
+        .main-image {
+            width: 100%;
+            height: 500px;
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .main-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumbnail-gallery {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-md);
+        }
+
+        .thumbnail {
+            height: 120px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all var(--transition-fast);
+        }
+
+        .thumbnail:hover,
+        .thumbnail.active {
+            border-color: var(--color-primary);
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-info h1 {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .product-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-xl);
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        .product-detail-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .quantity-input {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            background: var(--color-gray-100);
+            border-radius: var(--radius-md);
+            padding: 0.5rem;
+        }
+
+        .reviews-section {
+            margin-top: var(--spacing-3xl);
+            padding-top: var(--spacing-3xl);
+            border-top: 1px solid var(--color-gray-200);
+        }
+
+        .review-card {
+            background: var(--color-gray-50);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .reviewer-name {
+            font-weight: 600;
+        }
+
+        @media (max-width: 1024px) {
+            .product-detail-container {
+                grid-template-columns: 1fr;
+            }
+
+            .product-gallery {
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header id="header"></header>
+
+    <main>
+        <div class="container">
+            <div id="product-detail"></div>
+
+            <div style="margin-top: var(--spacing-3xl);">
+                <h2 class="section-title" style="margin-bottom: var(--spacing-xl);">Related Products</h2>
+                <div class="grid grid-cols-4 gap-lg" id="related-products"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer id="footer"></footer>
+
+    <script src="data/products.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/productService.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        productService.initialize();
+
+        const productId = parseInt(getUrlParameter('id'));
+        const product = productService.getProductById(productId);
+
+        if (!product) {
+            document.getElementById('product-detail').innerHTML = `
+        <div class="empty-state">
+          <h2>Product not found</h2>
+          <p>The product you're looking for doesn't exist.</p>
+          <a href="products.html" class="btn btn-primary">Browse Products</a>
+        </div>
+      `;
+        } else {
+            let selectedQuantity = 1;
+            let currentImageIndex = 0;
+
+            const stockStatus = getStockStatus(product.stock);
+
+            document.getElementById('product-detail').innerHTML = `
+        <div class="product-detail-container">
+          <div class="product-gallery">
+            <div class="main-image" id="main-image">
+              <img src="${product.images[0]}" alt="${product.name}">
+            </div>
+            <div class="thumbnail-gallery">
+              ${product.images.map((img, idx) => `
+                <div class="thumbnail ${idx === 0 ? 'active' : ''}" onclick="changeImage(${idx})">
+                  <img src="${img}" alt="View ${idx + 1}">
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          
+          <div class="product-info">
+            <div class="breadcrumb" style="margin-bottom: var(--spacing-md); color: var(--color-gray-500);">
+              <a href="index.html">Home</a> / 
+              <a href="products.html?category=${encodeURIComponent(product.category)}">${product.category}</a> / 
+              ${product.name}
+            </div>
+            
+            <h1>${product.name}</h1>
+            
+            <div class="product-meta">
+              <div class="product-rating">
+                <span class="product-stars">${generateStarRating(product.rating)}</span>
+                <span style="margin-left: 0.5rem; color: var(--color-gray-600);">
+                  ${product.rating} (${product.reviewCount} reviews)
+                </span>
+              </div>
+              <div class="badge badge-primary">${product.category}</div>
+              <div class="product-stock ${stockStatus.class}">${stockStatus.text}</div>
+            </div>
+            
+            <div class="product-detail-price">
+              ${formatCurrency(product.price)}
+              ${product.originalPrice ? `
+                <span style="font-size: 1.5rem; color: var(--color-gray-400); text-decoration: line-through; margin-left: 1rem;">
+                  ${formatCurrency(product.originalPrice)}
+                </span>
+                <span class="badge badge-error" style="margin-left: 1rem; font-size: 1rem;">
+                  ${product.discount}% OFF
+                </span>
+              ` : ''}
+            </div>
+            
+            <div style="background: var(--color-secondary); padding: var(--spacing-lg); border-radius: var(--radius-lg); margin-bottom: var(--spacing-xl);">
+              <p style="margin: 0;"><strong>SKU:</strong> ${product.sku}</p>
+              <p style="margin: 0.5rem 0 0 0;"><strong>Availability:</strong> ${product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}</p>
+            </div>
+            
+            <div class="quantity-selector">
+              <label style="font-weight: 600;">Quantity:</label>
+              <div class="quantity-input">
+                <button class="quantity-btn" onclick="updateQuantity(-1)">-</button>
+                <input type="number" id="quantity-input" value="1" min="1" max="${product.stock}" readonly>
+                <button class="quantity-btn" onclick="updateQuantity(1)">+</button>
+              </div>
+            </div>
+            
+            <div style="display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-xl);">
+              <button class="btn btn-primary btn-lg" style="flex: 1;" onclick="addToCart()" ${product.stock === 0 ? 'disabled' : ''}>
+                🛒 Add to Cart
+              </button>
+              <button class="btn btn-accent btn-lg" onclick="buyNow()" ${product.stock === 0 ? 'disabled' : ''}>
+                Buy Now
+              </button>
+            </div>
+            
+            <div style="padding: var(--spacing-lg); background: var(--color-gray-50); border-radius: var(--radius-lg);">
+              <h3 style="margin-bottom: var(--spacing-md);">Product Description</h3>
+              <p style="line-height: 1.8;">${product.description}</p>
+            </div>
+            
+            <div class="reviews-section">
+              <h3 style="margin-bottom: var(--spacing-xl);">Customer Reviews</h3>
+              ${product.reviews.map(review => `
+                <div class="review-card">
+                  <div class="review-header">
+                    <div>
+                      <div class="reviewer-name">${review.userName}</div>
+                      <div class="product-stars">${generateStarRating(review.rating)}</div>
+                    </div>
+                    <div style="color: var(--color-gray-500); font-size: 0.875rem;">${formatDate(review.date)}</div>
+                  </div>
+                  <p style="margin: 0;">${review.comment}</p>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+
+            // Functions
+            window.changeImage = (index) => {
+                currentImageIndex = index;
+                document.getElementById('main-image').innerHTML = `<img src="${product.images[index]}" alt="${product.name}">`;
+                document.querySelectorAll('.thumbnail').forEach((thumb, idx) => {
+                    thumb.classList.toggle('active', idx === index);
+                });
+            };
+
+            window.updateQuantity = (delta) => {
+                const input = document.getElementById('quantity-input');
+                const newValue = parseInt(input.value) + delta;
+                if (newValue >= 1 && newValue <= product.stock) {
+                    input.value = newValue;
+                    selectedQuantity = newValue;
+                }
+            };
+
+            window.addToCart = () => {
+                cartManager.addToCart(product, selectedQuantity);
+            };
+
+            window.buyNow = () => {
+                cartManager.addToCart(product, selectedQuantity);
+                window.location.href = 'cart.html';
+            };
+
+            // Load related products
+            const related = productService.getRelatedProducts(productId, 4);
+            document.getElementById('related-products').innerHTML = related.map(p => renderProductCard(p)).join('');
+        }
+    </script>
+</body>
+
+</html>

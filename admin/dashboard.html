@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - GreenMart</title>
+
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h2 style="color: var(--color-primary); margin: 0;">🌿 GreenMart</h2>
+                <p style="font-size: 0.875rem; color: var(--color-gray-600); margin: 0.25rem 0 0 0;">Admin Panel</p>
+            </div>
+
+            <nav class="admin-nav">
+                <a href="dashboard.html" class="admin-nav-link active">📊 Dashboard</a>
+                <a href="products.html" class="admin-nav-link">📦 Products</a>
+                <a href="orders.html" class="admin-nav-link">🛒 Orders</a>
+                <a href="categories.html" class="admin-nav-link">🏷️ Categories</a>
+                <a href="#" class="admin-nav-link" onclick="logout()">🚪 Logout</a>
+            </nav>
+
+            <div style="margin-top: auto; padding-top: var(--spacing-xl); border-top: 1px solid var(--color-gray-200);">
+                <a href="../index.html" style="color: var(--color-gray-600); font-size: 0.875rem;">
+                    ← Back to Store
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <div class="admin-header">
+                <div>
+                    <h1 style="margin: 0;">Dashboard</h1>
+                    <p style="color: var(--color-gray-600); margin: 0.25rem 0 0 0;">Welcome back, Admin!</p>
+                </div>
+                <div id="current-time" style="color: var(--color-gray-600);"></div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid" id="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-value" id="total-revenue">৳ 0</div>
+                    <div class="stat-label">Total Revenue</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🛒</div>
+                    <div class="stat-value" id="total-orders">0</div>
+                    <div class="stat-label">Total Orders</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-value" id="total-products">0</div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-value" id="low-stock">0</div>
+                    <div class="stat-label">Low Stock Items</div>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div style="margin-bottom: var(--spacing-2xl);">
+                <h2 style="margin-bottom: var(--spacing-lg);">Recent Orders</h2>
+                <div class="data-table">
+                    <table id="recent-orders-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-orders">
+                            <tr>
+                                <td colspan="7"
+                                    style="text-align: center; padding: var(--spacing-2xl); color: var(--color-gray-500);">
+                                    No orders yet
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Low Stock Products -->
+            <div>
+                <h2 style="margin-bottom: var(--spacing-lg);">Low Stock Alert</h2>
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>Stock</th>
+                                <th>Price</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="low-stock-products">
+                            <tr>
+                                <td colspan="5"
+                                    style="text-align: center; padding: var(--spacing-2xl); color: var(--color-gray-500);">
+                                    All products have sufficient stock
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../data/products.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/storage.js"></script>
+    <script src="../js/productService.js"></script>
+
+    <script>
+        // Check authentication
+        if (!storage.isAdminLoggedIn()) {
+            window.location.href = 'login.html';
+        }
+
+        // Initialize
+        productService.initialize();
+
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        updateTime();
+        setInterval(updateTime, 60000);
+
+        // Calculate stats
+        const orders = storage.getOrders();
+        const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+        const totalOrders = orders.length;
+        const totalProducts = productService.products.length;
+        const lowStockProducts = productService.products.filter(p => p.stock < 10 && p.stock > 0);
+
+        document.getElementById('total-revenue').textContent = formatCurrency(totalRevenue);
+        document.getElementById('total-orders').textContent = totalOrders;
+        document.getElementById('total-products').textContent = totalProducts.toLocaleString();
+        document.getElementById('low-stock').textContent = lowStockProducts.length;
+
+        // Render recent orders
+        if (orders.length > 0) {
+            const recentOrders = orders.slice(-10).reverse();
+            document.getElementById('recent-orders').innerHTML = recentOrders.map(order => `
+        <tr>
+          <td><strong>${order.id}</strong></td>
+          <td>${order.customer.firstName} ${order.customer.lastName}</td>
+          <td>${formatDate(order.createdAt)}</td>
+          <td>${order.items.length} items</td>
+          <td><strong>${formatCurrency(order.total)}</strong></td>
+          <td><span class="status-badge status-${order.status}">${order.status}</span></td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn btn-primary btn-sm btn-icon" onclick="viewOrder('${order.id}')" title="View">👁️</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+        }
+
+        // Render low stock products
+        if (lowStockProducts.length > 0) {
+            document.getElementById('low-stock-products').innerHTML = lowStockProducts.map(product => `
+        <tr>
+          <td>
+            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+              <img src="${product.images[0]}" alt="${product.name}" 
+                   style="width: 50px; height: 50px; border-radius: var(--radius-md); object-fit: cover;">
+              <div>
+                <div style="font-weight: 500;">${truncateText(product.name, 50)}</div>
+                <div style="font-size: 0.875rem; color: var(--color-gray-600);">SKU: ${product.sku}</div>
+              </div>
+            </div>
+          </td>
+          <td>${product.category}</td>
+          <td><span class="badge badge-warning">${product.stock} left</span></td>
+          <td><strong>${formatCurrency(product.price)}</strong></td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn btn-primary btn-sm" onclick="editProduct(${product.id})">Edit</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+        }
+
+        // Functions
+        function viewOrder(orderId) {
+            window.location.href = `orders.html?id=${orderId}`;
+        }
+
+        function editProduct(productId) {
+            window.location.href = `products.html?edit=${productId}`;
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                storage.clearAdminSession();
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</body>
+
+</html>

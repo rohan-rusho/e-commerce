@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - GreenMart</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .confirmation-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--spacing-3xl) var(--spacing-lg);
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 5rem;
+            margin-bottom: var(--spacing-lg);
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .order-details {
+            background: var(--color-white);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-2xl);
+            margin: var(--spacing-2xl) 0;
+            text-align: left;
+            box-shadow: var(--shadow-md);
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body>
+    <header id="header"></header>
+
+    <main>
+        <div class="confirmation-container">
+            <div class="success-icon">✅</div>
+            <h1>Order Confirmed!</h1>
+            <p style="font-size: 1.25rem; color: var(--color-gray-600); margin-bottom: var(--spacing-2xl);">
+                Thank you for your purchase. Your order has been received.
+            </p>
+
+            <div id="order-details" class="order-details"></div>
+
+            <div
+                style="display: flex; gap: var(--spacing-md); justify-content: center; margin-top: var(--spacing-2xl);">
+                <a href="index.html" class="btn btn-primary">Continue Shopping</a>
+                <a href="products.html" class="btn btn-secondary">Browse Products</a>
+            </div>
+        </div>
+    </main>
+
+    <footer id="footer"></footer>
+
+    <script src="data/products.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/productService.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        const orderId = getUrlParameter('id');
+        const order = storage.getOrderById(orderId);
+
+        if (!order) {
+            document.querySelector('.confirmation-container').innerHTML = `
+        <div class="empty-state">
+          <h2>Order not found</h2>
+          <p>We couldn't find the order you're looking for.</p>
+          <a href="index.html" class="btn btn-primary">Go to Homepage</a>
+        </div>
+      `;
+        } else {
+            document.getElementById('order-details').innerHTML = `
+        <h3 style="margin-bottom: var(--spacing-lg);">Order Details</h3>
+        
+        <div class="detail-row">
+          <strong>Order ID:</strong>
+          <span>${order.id}</span>
+        </div>
+        
+        <div class="detail-row">
+          <strong>Date:</strong>
+          <span>${formatDate(order.createdAt)}</span>
+        </div>
+        
+        <div class="detail-row">
+          <strong>Payment Method:</strong>
+          <span>${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}</span>
+        </div>
+        
+        <div class="detail-row">
+          <strong>Status:</strong>
+          <span class="badge badge-warning">${order.status.toUpperCase()}</span>
+        </div>
+        
+        <h4 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-md);">Shipping Address</h4>
+        <p style="margin: 0;">
+          ${order.customer.firstName} ${order.customer.lastName}<br>
+          ${order.customer.phone}<br>
+          ${order.customer.email}<br>
+          ${order.customer.address}<br>
+          ${order.customer.city}, ${order.customer.district} ${order.customer.postalCode || ''}
+        </p>
+        
+        <h4 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-md);">Order Items</h4>
+        ${order.items.map(item => `
+          <div class="detail-row">
+            <div>
+              <div style="font-weight: 500;">${item.name}</div>
+              <div style="font-size: 0.875rem; color: var(--color-gray-600);">Qty: ${item.quantity}</div>
+            </div>
+            <div>${formatCurrency(item.price * item.quantity)}</div>
+          </div>
+        `).join('')}
+        
+        <h4 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-md);">Order Summary</h4>
+        <div class="detail-row">
+          <span>Subtotal:</span>
+          <span>${formatCurrency(order.subtotal)}</span>
+        </div>
+        ${order.discount > 0 ? `
+        <div class="detail-row">
+          <span>Discount:</span>
+          <span style="color: var(--color-success);">-${formatCurrency(order.discount)}</span>
+        </div>
+        ` : ''}
+        <div class="detail-row">
+          <span>Shipping:</span>
+          <span>${order.shipping === 0 ? 'FREE' : formatCurrency(order.shipping)}</span>
+        </div>
+        <div class="detail-row" style="font-size: 1.25rem; font-weight: 700; color: var(--color-primary);">
+          <span>Total:</span>
+          <span>${formatCurrency(order.total)}</span>
+        </div>
+        
+        ${order.notes ? `
+        <h4 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-md);">Order Notes</h4>
+        <p style="background: var(--color-gray-50); padding: var(--spacing-md); border-radius: var(--radius-md); margin: 0;">
+          ${order.notes}
+        </p>
+        ` : ''}
+      `;
+        }
+    </script>
+</body>
+
+</html>

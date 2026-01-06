@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Orders - Admin</title>
+
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h2 style="color: var(--color-primary); margin: 0;">🌿 GreenMart</h2>
+                <p style="font-size: 0.875rem; color: var(--color-gray-600); margin: 0.25rem 0 0 0;">Admin Panel</p>
+            </div>
+
+            <nav class="admin-nav">
+                <a href="dashboard.html" class="admin-nav-link">📊 Dashboard</a>
+                <a href="products.html" class="admin-nav-link">📦 Products</a>
+                <a href="orders.html" class="admin-nav-link active">🛒 Orders</a>
+                <a href="categories.html" class="admin-nav-link">🏷️ Categories</a>
+                <a href="#" class="admin-nav-link" onclick="logout()">🚪 Logout</a>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-header">
+                <h1 style="margin: 0;">Order Management</h1>
+            </div>
+
+            <div class="toolbar">
+                <div class="search-box">
+                    <input type="search" id="search-orders" placeholder="Search orders..." onkeyup="searchOrders()">
+                </div>
+                <select class="select" id="filter-status" onchange="filterOrders()">
+                    <option value="">All Statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+
+            <div class="data-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-body"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <div class="modal-overlay" id="order-modal">
+        <div class="modal" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Order Details</h3>
+                <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="order-details"></div>
+        </div>
+    </div>
+
+    <script src="../data/products.js"></script>
+    <script src="../js/utils.js"></script>
+    <script src="../js/storage.js"></script>
+    <script src="../js/productService.js"></script>
+
+    <script>
+        if (!storage.isAdminLoggedIn()) window.location.href = 'login.html';
+
+        let allOrders = storage.getOrders();
+        let filteredOrders = [...allOrders];
+
+        function renderOrders() {
+            const tbody = document.getElementById('orders-table-body');
+
+            if (filteredOrders.length === 0) {
+                tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; padding: var(--spacing-2xl);">
+              No orders found
+            </td>
+          </tr>
+        `;
+                return;
+            }
+
+            tbody.innerHTML = filteredOrders.reverse().map(order => `
+        <tr>
+          <td><strong>${order.id}</strong></td>
+          <td>
+            <div>${order.customer.firstName} ${order.customer.lastName}</div>
+            <div style="font-size: 0.875rem; color: var(--color-gray-600);">${order.customer.phone}</div>
+          </td>
+          <td>${formatDate(order.createdAt)}</td>
+          <td>${order.items.length} items</td>
+          <td><strong>${formatCurrency(order.total)}</strong></td>
+          <td>
+            <span class="badge ${order.paymentMethod === 'cod' ? 'badge-warning' : 'badge-success'}">
+              ${order.paymentMethod === 'cod' ? 'COD' : 'Online'}
+            </span>
+          </td>
+          <td><span class="status-badge status-${order.status}">${order.status}</span></td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn btn-primary btn-sm btn-icon" onclick="viewOrder('${order.id}')" title="View">👁️</button>
+              <select class="select" style="padding: 0.375rem; font-size: 0.875rem; min-width: 120px;" 
+                      onchange="updateOrderStatus('${order.id}', this.value)">
+                <option value="">Change Status</option>
+                <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
+                <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+              </select>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+        }
+
+        function searchOrders() {
+            const query = document.getElementById('search-orders').value.toLowerCase();
+            filteredOrders = allOrders.filter(order =>
+                order.id.toLowerCase().includes(query) ||
+                order.customer.firstName.toLowerCase().includes(query) ||
+                order.customer.lastName.toLowerCase().includes(query) ||
+                order.customer.phone.includes(query)
+            );
+            filterOrders();
+        }
+
+        function filterOrders() {
+            const status = document.getElementById('filter-status').value;
+            const query = document.getElementById('search-orders').value.toLowerCase();
+
+            filteredOrders = allOrders.filter(order => {
+                const matchesSearch = !query ||
+                    order.id.toLowerCase().includes(query) ||
+                    order.customer.firstName.toLowerCase().includes(query) ||
+                    order.customer.lastName.toLowerCase().includes(query);
+
+                const matchesStatus = !status || order.status === status;
+
+                return matchesSearch && matchesStatus;
+            });
+
+            renderOrders();
+        }
+
+        function viewOrder(orderId) {
+            const order = storage.getOrderById(orderId);
+            if (!order) return;
+
+            document.getElementById('order-details').innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl); margin-bottom: var(--spacing-xl);">
+          <div>
+            <h4>Customer Information</h4>
+            <p>
+              <strong>Name:</strong> ${order.customer.firstName} ${order.customer.lastName}<br>
+              <strong>Email:</strong> ${order.customer.email}<br>
+              <strong>Phone:</strong> ${order.customer.phone}
+            </p>
+          </div>
+          <div>
+            <h4>Shipping Address</h4>
+            <p>
+              ${order.customer.address}<br>
+              ${order.customer.city}, ${order.customer.district}<br>
+              ${order.customer.postalCode || ''}
+            </p>
+          </div>
+        </div>
+        
+        <div style="margin-bottom: var(--spacing-xl);">
+          <h4>Order Information</h4>
+          <p>
+            <strong>Order ID:</strong> ${order.id}<br>
+            <strong>Date:</strong> ${formatDate(order.createdAt)}<br>
+            <strong>Payment Method:</strong> ${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}<br>
+            <strong>Status:</strong> <span class="status-badge status-${order.status}">${order.status}</span>
+          </p>
+        </div>
+        
+        <h4>Order Items</h4>
+        <div class="data-table" style="margin-bottom: var(--spacing-xl);">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${order.items.map(item => `
+                <tr>
+                  <td>${item.name}</td>
+                  <td>${formatCurrency(item.price)}</td>
+                  <td>${item.quantity}</td>
+                  <td><strong>${formatCurrency(item.price * item.quantity)}</strong></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        
+        <div style="background: var(--color-gray-50); padding: var(--spacing-lg); border-radius: var(--radius-md);">
+          <div style="display: flex; justify-content: space-between; padding: var(--spacing-sm) 0;">
+            <span>Subtotal:</span>
+            <span>${formatCurrency(order.subtotal)}</span>
+          </div>
+          ${order.discount > 0 ? `
+          <div style="display: flex; justify-content: space-between; padding: var(--spacing-sm) 0; color: var(--color-success);">
+            <span>Discount:</span>
+            <span>-${formatCurrency(order.discount)}</span>
+          </div>
+          ` : ''}
+          <div style="display: flex; justify-content: space-between; padding: var(--spacing-sm) 0;">
+            <span>Shipping:</span>
+            <span>${order.shipping === 0 ? 'FREE' : formatCurrency(order.shipping)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: var(--spacing-sm) 0; font-size: 1.25rem; font-weight: 700; border-top: 2px solid var(--color-gray-300); margin-top: var(--spacing-sm); padding-top: var(--spacing-md);">
+            <span>Total:</span>
+            <span style="color: var(--color-primary);">${formatCurrency(order.total)}</span>
+          </div>
+        </div>
+        
+        ${order.notes ? `
+        <div style="margin-top: var(--spacing-xl);">
+          <h4>Order Notes</h4>
+          <p style="background: var(--color-secondary); padding: var(--spacing-md); border-radius: var(--radius-md);">
+            ${order.notes}
+          </p>
+        </div>
+        ` : ''}
+      `;
+
+            document.getElementById('order-modal').classList.add('active');
+        }
+
+        function closeOrderModal() {
+            document.getElementById('order-modal').classList.remove('active');
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            if (!newStatus) return;
+
+            storage.updateOrderStatus(orderId, newStatus);
+            allOrders = storage.getOrders();
+            filteredOrders = [...allOrders];
+            filterOrders();
+            showToast(`Order status updated to ${newStatus}`, 'success');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                storage.clearAdminSession();
+                window.location.href = 'login.html';
+            }
+        }
+
+        renderOrders();
+    </script>
+</body>
+
+</html>

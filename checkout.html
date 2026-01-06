@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - GreenMart</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .checkout-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: var(--spacing-2xl);
+            padding: var(--spacing-3xl) 0;
+        }
+
+        .checkout-form {
+            background: var(--color-white);
+            padding: var(--spacing-2xl);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .form-section {
+            margin-bottom: var(--spacing-2xl);
+            padding-bottom: var(--spacing-2xl);
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        .form-section:last-child {
+            border-bottom: none;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .payment-option {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-lg);
+            border: 2px solid var(--color-gray-200);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .payment-option:hover {
+            border-color: var(--color-primary);
+            background: var(--color-secondary);
+        }
+
+        .payment-option input[type="radio"]:checked+label {
+            border-color: var(--color-primary);
+            background: var(--color-secondary);
+        }
+
+        .order-summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        @media (max-width: 1024px) {
+            .checkout-container {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header id="header"></header>
+
+    <main>
+        <div class="container">
+            <div class="checkout-container">
+                <div>
+                    <h1 style="margin-bottom: var(--spacing-xl);">Checkout</h1>
+
+                    <form class="checkout-form" id="checkout-form">
+                        <div class="form-section">
+                            <h3 style="margin-bottom: var(--spacing-lg);">Shipping Information</h3>
+
+                            <div class="form-row">
+                                <div class="input-group">
+                                    <label class="input-label">First Name *</label>
+                                    <input type="text" class="input" name="firstName" required>
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">Last Name *</label>
+                                    <input type="text" class="input" name="lastName" required>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Email *</label>
+                                <input type="email" class="input" name="email" required>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Phone Number *</label>
+                                <input type="tel" class="input" name="phone" placeholder="+880 1XXX-XXXXXX" required>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Address *</label>
+                                <input type="text" class="input" name="address" placeholder="Street address" required>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="input-group">
+                                    <label class="input-label">City *</label>
+                                    <input type="text" class="input" name="city" required>
+                                </div>
+                                <div class="input-group">
+                                    <label class="input-label">District *</label>
+                                    <input type="text" class="input" name="district" placeholder="e.g., Dhaka" required>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Postal Code</label>
+                                <input type="text" class="input" name="postalCode" placeholder="1000">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 style="margin-bottom: var(--spacing-lg);">Payment Method</h3>
+
+                            <div class="payment-options">
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="cod" checked>
+                                    <div>
+                                        <div style="font-weight: 600;">💵 Cash on Delivery</div>
+                                        <div style="font-size: 0.875rem; color: var(--color-gray-600);">Pay when you
+                                            receive your order</div>
+                                    </div>
+                                </label>
+
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="online">
+                                    <div>
+                                        <div style="font-weight: 600;">💳 Online Payment</div>
+                                        <div style="font-size: 0.875rem; color: var(--color-gray-600);">Coming soon!
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3 style="margin-bottom: var(--spacing-lg);">Order Notes (Optional)</h3>
+                            <textarea class="textarea" name="notes"
+                                placeholder="Any special instructions for delivery?"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg btn-block">
+                            Place Order
+                        </button>
+                    </form>
+                </div>
+
+                <div>
+                    <div class="cart-summary-card">
+                        <h3 style="margin-bottom: var(--spacing-lg);">Order Summary</h3>
+                        <div id="order-items"></div>
+                        <div id="order-summary" style="margin-top: var(--spacing-lg);"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer id="footer"></footer>
+
+    <script src="data/products.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/productService.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        productService.initialize();
+
+        const cart = storage.getCart();
+
+        if (cart.length === 0) {
+            window.location.href = 'cart.html';
+        }
+
+        // Render order items
+        const orderItemsContainer = document.getElementById('order-items');
+        orderItemsContainer.innerHTML = cart.map(item => `
+      <div class="order-summary-item">
+        <div>
+          <div style="font-weight: 500;">${item.name}</div>
+          <div style="font-size: 0.875rem; color: var(--color-gray-600);">Qty: ${item.quantity}</div>
+        </div>
+        <div style="font-weight: 600;">${formatCurrency(item.price * item.quantity)}</div>
+      </div>
+    `).join('');
+
+        // Calculate totals
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const discount = cart.reduce((sum, item) => {
+            if (item.originalPrice) {
+                return sum + ((item.originalPrice - item.price) * item.quantity);
+            }
+            return sum;
+        }, 0);
+        const shipping = subtotal > 2000 ? 0 : 100;
+        const total = subtotal + shipping;
+
+        document.getElementById('order-summary').innerHTML = `
+      <div class="summary-row">
+        <span>Subtotal:</span>
+        <span>${formatCurrency(subtotal)}</span>
+      </div>
+      ${discount > 0 ? `
+      <div class="summary-row discount">
+        <span>Discount:</span>
+        <span>-${formatCurrency(discount)}</span>
+      </div>
+      ` : ''}
+      <div class="summary-row">
+        <span>Shipping:</span>
+        <span>${shipping === 0 ? 'FREE' : formatCurrency(shipping)}</span>
+      </div>
+      <div class="summary-row total">
+        <span>Total:</span>
+        <span>${formatCurrency(total)}</span>
+      </div>
+    `;
+
+        // Handle form submission
+        document.getElementById('checkout-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const orderData = {
+                customer: {
+                    firstName: formData.get('firstName'),
+                    lastName: formData.get('lastName'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone'),
+                    address: formData.get('address'),
+                    city: formData.get('city'),
+                    district: formData.get('district'),
+                    postalCode: formData.get('postalCode')
+                },
+                items: cart,
+                paymentMethod: formData.get('paymentMethod'),
+                notes: formData.get('notes'),
+                subtotal: subtotal,
+                discount: discount,
+                shipping: shipping,
+                total: total,
+                paymentStatus: 'pending'
+            };
+
+            // Validate email
+            if (!validateEmail(orderData.customer.email)) {
+                showToast('Please enter a valid email address', 'error');
+                return;
+            }
+
+            // Validate phone
+            if (!validatePhone(orderData.customer.phone)) {
+                showToast('Please enter a valid Bangladesh phone number', 'error');
+                return;
+            }
+
+            // Save order
+            const order = storage.saveOrder(orderData);
+
+            // Clear cart
+            storage.clearCart();
+
+            // Show success and redirect
+            showToast('Order placed successfully!', 'success');
+
+            setTimeout(() => {
+                window.location.href = `order-confirmation.html?id=${order.id}`;
+            }, 1500);
+        });
+    </script>
+</body>
+
+</html>

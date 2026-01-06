@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - GreenMart</title>
+
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-darker));
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: var(--color-white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            padding: var(--spacing-3xl);
+            width: 100%;
+            max-width: 450px;
+            margin: var(--spacing-lg);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .login-icon {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-lg);
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="login-icon">🔐</div>
+            <h1 style="margin-bottom: 0.5rem;">Admin Panel</h1>
+            <p style="color: var(--color-gray-600);">GreenMart Dashboard</p>
+        </div>
+
+        <div class="error-message" id="error-message"></div>
+
+        <form id="login-form">
+            <div class="input-group">
+                <label class="input-label">Username</label>
+                <input type="text" class="input" id="username" required autofocus>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Password</label>
+                <input type="password" class="input" id="password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: var(--spacing-lg);">
+                Login to Dashboard
+            </button>
+        </form>
+
+        <div
+            style="margin-top: var(--spacing-xl); text-align: center; padding-top: var(--spacing-xl); border-top: 1px solid var(--color-gray-200);">
+            <p style="color: var(--color-gray-600); font-size: 0.875rem;">
+                Default credentials:<br>
+                <strong>admin / admin123</strong>
+            </p>
+            <a href="../index.html"
+                style="color: var(--color-primary); font-size: 0.875rem; margin-top: var(--spacing-sm); display: inline-block;">
+                ← Back to Store
+            </a>
+        </div>
+    </div>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/storage.js"></script>
+
+    <script>
+        // Check if already logged in
+        if (storage.isAdminLoggedIn()) {
+            window.location.href = 'dashboard.html';
+        }
+
+        // Handle login
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('error-message');
+
+            // Simple authentication (in production, use proper backend auth)
+            if (username === 'admin' && password === 'admin123') {
+                storage.setAdminSession({
+                    username: username,
+                    role: 'admin'
+                });
+
+                window.location.href = 'dashboard.html';
+            } else {
+                errorMsg.textContent = 'Invalid username or password';
+                errorMsg.classList.add('show');
+
+                setTimeout(() => {
+                    errorMsg.classList.remove('show');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+
+</html>
