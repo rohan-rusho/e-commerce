@@ -121,11 +121,11 @@ function renderFooter() {
         <div class="footer-bottom">
           <p>&copy; ${currentYear} GreenMart. All rights reserved.</p>
           <div style="margin-top: var(--spacing-sm);">
-            <p style="margin-bottom: var(--spacing-xs);">Built with ❤️ for Bangladesh by <strong>Rohan Rusho</strong></p>
+            <p style="margin-bottom: var(--spacing-xs);">Built with ❤️ for Bangladesh by <strong style="color: var(--color-primary);">Rohan Rusho</strong></p>
             <div style="display: flex; gap: var(--spacing-md); justify-content: center; margin-top: var(--spacing-sm);">
-                <a href="https://www.facebook.com/eita.rohan" target="_blank" style="color: var(--color-gray-500); hover: var(--color-primary);" title="Facebook">Facebook</a>
-                <a href="https://www.instagram.com/rohan.rusho" target="_blank" style="color: var(--color-gray-500); hover: var(--color-primary);" title="Instagram">Instagram</a>
-                <a href="https://github.com/rohan-rusho" target="_blank" style="color: var(--color-gray-500); hover: var(--color-primary);" title="GitHub">GitHub</a>
+                <a href="https://www.facebook.com/eita.rohan" target="_blank" style="color: var(--color-primary); font-weight: 500;" title="Facebook">Facebook</a>
+                <a href="https://www.instagram.com/rohan.rusho" target="_blank" style="color: var(--color-primary); font-weight: 500;" title="Instagram">Instagram</a>
+                <a href="https://github.com/rohan-rusho" target="_blank" style="color: var(--color-primary); font-weight: 500;" title="GitHub">GitHub</a>
             </div>
           </div>
         </div>
