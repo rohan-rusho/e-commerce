@@ -597,7 +597,8 @@ a:hover {
     width: 90%;
     max-width: 600px;
     max-height: 90vh;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
     box-shadow: var(--shadow-xl);
     transform: scale(0.9);
     transition: transform var(--transition-base);
@@ -636,6 +637,7 @@ a:hover {
 
 .modal-body {
     padding: var(--spacing-xl);
+    overflow-y: auto;
 }
 
 .modal-footer {
