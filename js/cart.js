@@ -1,78 +1,78 @@
 // Cart Manager - Handles cart UI updates and operations
 
 class CartManager {
-    constructor() {
-        this.cartCountElement = null;
-        this.init();
+  constructor() {
+    this.cartCountElement = null;
+    this.init();
+  }
+
+  init() {
+    // Listen for cart updates
+    window.addEventListener('cartUpdated', (event) => {
+      this.updateCartCount(event.detail.count);
+    });
+
+    // Update cart count on page load
+    setTimeout(() => {
+      this.updateCartCount(storage.getCartItemCount());
+    }, 100);
+  }
+
+  updateCartCount(count) {
+    const badge = document.querySelector('.cart-badge');
+    if (badge) {
+      badge.textContent = count;
+      badge.style.display = count > 0 ? 'flex' : 'none';
+    }
+  }
+
+  addToCart(product, quantity = 1) {
+    if (product.stock === 0) {
+      showToast('This product is out of stock', 'error');
+      return;
     }
 
-    init() {
-        // Listen for cart updates
-        window.addEventListener('cartUpdated', (event) => {
-            this.updateCartCount(event.detail.count);
-        });
-
-        // Update cart count on page load
-        setTimeout(() => {
-            this.updateCartCount(storage.getCartItemCount());
-        }, 100);
+    if (quantity > product.stock) {
+      showToast(`Only ${product.stock} items available`, 'warning');
+      return;
     }
 
-    updateCartCount(count) {
-        const badge = document.querySelector('.cart-badge');
-        if (badge) {
-            badge.textContent = count;
-            badge.style.display = count > 0 ? 'flex' : 'none';
-        }
+    storage.addToCart(product, quantity);
+    showToast(`${product.name} added to cart!`, 'success');
+  }
+
+  removeFromCart(productId) {
+    storage.removeFromCart(productId);
+    showToast('Item removed from cart', 'info');
+    this.renderCart();
+  }
+
+  updateQuantity(productId, quantity) {
+    if (quantity < 1) {
+      this.removeFromCart(productId);
+      return;
     }
 
-    addToCart(product, quantity = 1) {
-        if (product.stock === 0) {
-            showToast('This product is out of stock', 'error');
-            return;
-        }
+    const cart = storage.getCart();
+    const item = cart.find(item => item.id === productId);
 
-        if (quantity > product.stock) {
-            showToast(`Only ${product.stock} items available`, 'warning');
-            return;
-        }
-
-        storage.addToCart(product, quantity);
-        showToast(`${product.name} added to cart!`, 'success');
+    if (item && quantity > item.stock) {
+      showToast(`Only ${item.stock} items available`, 'warning');
+      return;
     }
 
-    removeFromCart(productId) {
-        storage.removeFromCart(productId);
-        showToast('Item removed from cart', 'info');
-        this.renderCart();
-    }
+    storage.updateCartItemQuantity(productId, quantity);
+    this.renderCart();
+  }
 
-    updateQuantity(productId, quantity) {
-        if (quantity < 1) {
-            this.removeFromCart(productId);
-            return;
-        }
+  renderCart() {
+    const container = document.getElementById('cart-items');
+    if (!container) return;
 
-        const cart = storage.getCart();
-        const item = cart.find(item => item.id === productId);
+    const cart = storage.getCart();
 
-        if (item && quantity > item.stock) {
-            showToast(`Only ${item.stock} items available`, 'warning');
-            return;
-        }
-
-        storage.updateCartItemQuantity(productId, quantity);
-        this.renderCart();
-    }
-
-    renderCart() {
-        const container = document.getElementById('cart-items');
-        if (!container) return;
-
-        const cart = storage.getCart();
-
-        if (cart.length === 0) {
-            container.innerHTML = `
+    if (cart.length === 0) {
+      container.innerHTML = `
         <div class="empty-state">
           <div style="font-size: 4rem; margin-bottom: 1rem;">🛒</div>
           <h3>Your cart is empty</h3>
@@ -80,14 +80,14 @@ class CartManager {
           <a href="products.html" class="btn btn-primary" style="margin-top: 1rem;">Browse Products</a>
         </div>
       `;
-            this.updateCartSummary();
-            return;
-        }
+      this.updateCartSummary();
+      return;
+    }
 
-        const cartHTML = cart.map(item => {
-            const stockStatus = getStockStatus(item.stock);
+    const cartHTML = cart.map(item => {
+      const stockStatus = getStockStatus(item.stock);
 
-            return `
+      return `
         <div class="cart-item" data-id="${item.id}">
           <div class="cart-item-img">
             <img src="${item.images[0]}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/150'">
@@ -114,36 +114,38 @@ class CartManager {
           </button>
         </div>
       `;
-        }).join('');
+    }).join('');
 
-        container.innerHTML = cartHTML;
-        this.updateCartSummary();
-    }
+    container.innerHTML = cartHTML;
+    this.updateCartSummary();
+  }
 
-    updateCartSummary() {
-        const cart = storage.getCart();
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const discount = cart.reduce((sum, item) => {
-            if (item.originalPrice) {
-                return sum + ((item.originalPrice - item.price) * item.quantity);
-            }
-            return sum;
-        }, 0);
-        const shipping = subtotal > 0 ? (subtotal > 2000 ? 0 : 100) : 0;
-        const total = subtotal + shipping;
+  updateCartSummary() {
+    const cart = storage.getCart();
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const discount = cart.reduce((sum, item) => {
+      if (item.originalPrice) {
+        return sum + ((item.originalPrice - item.price) * item.quantity);
+      }
+      return sum;
+    }, 0);
+    const shipping = subtotal > 0 ? (subtotal > 2000 ? 0 : 100) : 0;
+    const total = subtotal + shipping;
 
-        const summaryElement = document.getElementById('cart-summary');
-        if (summaryElement) {
-            summaryElement.innerHTML = `
+    const summaryElement = document.getElementById('cart-summary');
+    if (summaryElement) {
+      summaryElement.innerHTML = `
         <div class="summary-row">
           <span>Subtotal:</span>
           <span>${formatCurrency(subtotal)}</span>
         </div>
         ${discount > 0 ? `
-        <div class="summary-row discount">
-          <span>Discount:</span>
-          <span>-${formatCurrency(discount)}</span>
+        ${discount > 0 ? `
+        <div class="summary-row discount" style="color: var(--color-success); font-size: 0.9rem;">
+          <span>You Save:</span>
+          <span>${formatCurrency(discount)}</span>
         </div>
+        ` : ''}
         ` : ''}
         <div class="summary-row">
           <span>Shipping:</span>
@@ -165,16 +167,16 @@ class CartManager {
         </a>
         ` : ''}
       `;
-        }
     }
+  }
 
-    clearCart() {
-        if (confirm('Are you sure you want to clear your cart?')) {
-            storage.clearCart();
-            showToast('Cart cleared', 'info');
-            this.renderCart();
-        }
+  clearCart() {
+    if (confirm('Are you sure you want to clear your cart?')) {
+      storage.clearCart();
+      showToast('Cart cleared', 'info');
+      this.renderCart();
     }
+  }
 }
 
 // Create global instance

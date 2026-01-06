@@ -181,6 +181,14 @@
                 <div>
                     <div class="cart-summary-card">
                         <h3 style="margin-bottom: var(--spacing-lg);">Order Summary</h3>
+
+                        <!-- Coupon Code -->
+                        <div style="display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-lg);">
+                            <input type="text" id="coupon-code" class="input" placeholder="Coupon Code"
+                                style="flex: 1;">
+                            <button class="btn btn-secondary" onclick="applyCoupon()">Apply</button>
+                        </div>
+
                         <div id="order-items"></div>
                         <div id="order-summary" style="margin-top: var(--spacing-lg);"></div>
                     </div>
@@ -221,40 +229,99 @@
     `).join('');
 
         // Calculate totals
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const discount = cart.reduce((sum, item) => {
-            if (item.originalPrice) {
-                return sum + ((item.originalPrice - item.price) * item.quantity);
-            }
-            return sum;
-        }, 0);
-        const shipping = subtotal > 2000 ? 0 : 100;
-        const total = subtotal + shipping;
+        let appliedCoupon = null;
+        let couponDiscount = 0;
 
-        document.getElementById('order-summary').innerHTML = `
-      <div class="summary-row">
-        <span>Subtotal:</span>
-        <span>${formatCurrency(subtotal)}</span>
-      </div>
-      ${discount > 0 ? `
-      <div class="summary-row discount">
-        <span>Discount:</span>
-        <span>-${formatCurrency(discount)}</span>
-      </div>
-      ` : ''}
-      <div class="summary-row">
-        <span>Shipping:</span>
-        <span>${shipping === 0 ? 'FREE' : formatCurrency(shipping)}</span>
-      </div>
-      <div class="summary-row total">
-        <span>Total:</span>
-        <span>${formatCurrency(total)}</span>
-      </div>
-    `;
+        function applyCoupon() {
+            const codeInput = document.getElementById('coupon-code');
+            const code = codeInput.value.trim().toUpperCase();
+
+            if (!code) {
+                showToast('Please enter a coupon code', 'warning');
+                return;
+            }
+
+            // Simple coupon logic (in production this would verify with backend)
+            if (code === 'SAVE10') {
+                appliedCoupon = { code: 'SAVE10', type: 'percent', value: 10 };
+                showToast('Coupon applied! 10% off', 'success');
+                updateOrderSummary();
+            } else if (code === 'FLAT500') {
+                appliedCoupon = { code: 'FLAT500', type: 'fixed', value: 500 };
+                showToast('Coupon applied! ৳500 off', 'success');
+                updateOrderSummary();
+            } else {
+                showToast('Invalid coupon code', 'error');
+                appliedCoupon = null;
+                updateOrderSummary();
+            }
+        }
+
+        function updateOrderSummary() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            // Calculate regular savings (fake discount removed visually but kept for logic if needed, though we focus on real coupon)
+            const productSavings = cart.reduce((sum, item) => {
+                if (item.originalPrice) {
+                    return sum + ((item.originalPrice - item.price) * item.quantity);
+                }
+                return sum;
+            }, 0);
+
+            let shipping = subtotal > 2000 ? 0 : 100;
+
+            // Calculate Coupon Discount
+            if (appliedCoupon) {
+                if (appliedCoupon.type === 'percent') {
+                    couponDiscount = Math.round(subtotal * (appliedCoupon.value / 100));
+                } else if (appliedCoupon.type === 'fixed') {
+                    couponDiscount = appliedCoupon.value;
+                }
+            } else {
+                couponDiscount = 0;
+            }
+
+            const total = Math.max(0, subtotal + shipping - couponDiscount);
+
+            document.getElementById('order-summary').innerHTML = `
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span>${formatCurrency(subtotal)}</span>
+                </div>
+                ${productSavings > 0 ? `
+                <div class="summary-row" style="color: var(--color-success); font-size: 0.9rem;">
+                    <span>Product Savings:</span>
+                    <span>-${formatCurrency(productSavings)}</span>
+                </div>
+                ` : ''}
+                ${couponDiscount > 0 ? `
+                <div class="summary-row discount">
+                    <span>Coupon (${appliedCoupon.code}):</span>
+                    <span>-${formatCurrency(couponDiscount)}</span>
+                </div>
+                ` : ''}
+                <div class="summary-row">
+                    <span>Shipping:</span>
+                    <span>${shipping === 0 ? 'FREE' : formatCurrency(shipping)}</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total:</span>
+                    <span>${formatCurrency(total)}</span>
+                </div>
+            `;
+
+            // Update global vars for form submission
+            window.currentOrderTotals = { subtotal, shipping, couponDiscount, total, productSavings };
+        }
+
+        // Initial update
+        updateOrderSummary();
 
         // Handle form submission
         document.getElementById('checkout-form').addEventListener('submit', (e) => {
             e.preventDefault();
+
+            const totals = window.currentOrderTotals; // Get freshest values
 
             const formData = new FormData(e.target);
             const orderData = {
@@ -271,10 +338,12 @@
                 items: cart,
                 paymentMethod: formData.get('paymentMethod'),
                 notes: formData.get('notes'),
-                subtotal: subtotal,
-                discount: discount,
-                shipping: shipping,
-                total: total,
+                subtotal: totals.subtotal,
+                discount: totals.productSavings, // Track product savings separately if needed
+                couponDiscount: totals.couponDiscount, // New field for real discount
+                couponCode: appliedCoupon ? appliedCoupon.code : null,
+                shipping: totals.shipping,
+                total: totals.total,
                 paymentStatus: 'pending'
             };
 
