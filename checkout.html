@@ -241,14 +241,13 @@
                 return;
             }
 
-            // Simple coupon logic (in production this would verify with backend)
-            if (code === 'SAVE10') {
-                appliedCoupon = { code: 'SAVE10', type: 'percent', value: 10 };
-                showToast('Coupon applied! 10% off', 'success');
-                updateOrderSummary();
-            } else if (code === 'FLAT500') {
-                appliedCoupon = { code: 'FLAT500', type: 'fixed', value: 500 };
-                showToast('Coupon applied! ৳500 off', 'success');
+            const coupons = storage.getCoupons();
+            const validCoupon = coupons.find(c => c.code === code);
+
+            if (validCoupon) {
+                appliedCoupon = validCoupon;
+                const valueText = validCoupon.type === 'percent' ? `${validCoupon.value}%` : `৳${validCoupon.value}`;
+                showToast(`Coupon applied! ${valueText} off`, 'success');
                 updateOrderSummary();
             } else {
                 showToast('Invalid coupon code', 'error');

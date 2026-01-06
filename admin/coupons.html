@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Coupons - Admin</title>
+    <link rel="icon" href="../images/favicon.png" type="image/png">
+
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h2 style="color: var(--color-primary); margin: 0;">🌿 GreenMart</h2>
+                <p style="font-size: 0.875rem; color: var(--color-gray-600); margin: 0.25rem 0 0 0;">Admin Panel</p>
+            </div>
+
+            <nav class="admin-nav">
+                <a href="dashboard.html" class="admin-nav-link">📊 Dashboard</a>
+                <a href="products.html" class="admin-nav-link">📦 Products</a>
+                <a href="orders.html" class="admin-nav-link">🛒 Orders</a>
+                <a href="categories.html" class="admin-nav-link">🏷️ Categories</a>
+                <a href="coupons.html" class="admin-nav-link active">🎫 Coupons</a>
+                <a href="#" class="admin-nav-link" onclick="logout()">🚪 Logout</a>
+            </nav>
+
+            <div style="margin-top: auto; padding-top: var(--spacing-xl); border-top: 1px solid var(--color-gray-200);">
+                <a href="../index.html" style="color: var(--color-gray-600); font-size: 0.875rem;">
+                    ← Back to Store
+                </a>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-header">
+                <div>
+                    <h1 style="margin: 0;">Coupons</h1>
+                    <p style="color: var(--color-gray-600); margin: 0.25rem 0 0 0;">Manage discount codes</p>
+                </div>
+                <button class="btn btn-primary" onclick="openCouponModal()">
+                    + Add Coupon
+                </button>
+            </div>
+
+            <div class="data-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Type</th>
+                            <th>Value</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="coupons-table-body">
+                        <!-- Coupons will be rendered here -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Coupon Modal -->
+    <div class="modal-overlay" id="coupon-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Add Coupon</h3>
+                <button class="modal-close" onclick="closeCouponModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="coupon-form">
+                    <div class="input-group">
+                        <label class="input-label">Coupon Code</label>
+                        <input type="text" class="input" id="coupon-code" required placeholder="e.g. SAVE10">
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Discount Type</label>
+                        <select class="select" id="coupon-type" required>
+                            <option value="percent">Percentage (%)</option>
+                            <option value="fixed">Fixed Amount (৳)</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Value</label>
+                        <input type="number" class="input" id="coupon-value" required min="1">
+                    </div>
+
+                    <div style="margin-top: var(--spacing-xl);">
+                        <button type="submit" class="btn btn-primary btn-block">
+                            Save Coupon
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/utils.js"></script>
+    <script src="../js/storage.js"></script>
+
+    <script>
+        if (!storage.isAdminLoggedIn()) window.location.href = 'login.html';
+
+        function renderCoupons() {
+            const coupons = storage.getCoupons();
+            const tbody = document.getElementById('coupons-table-body');
+
+            if (coupons.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: var(--spacing-2xl); color: var(--color-gray-500);">
+                            No coupons found. Create one to get started!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = coupons.reverse().map(coupon => `
+                <tr>
+                    <td><strong>${coupon.code}</strong></td>
+                    <td>${coupon.type === 'percent' ? 'Percentage' : 'Fixed Amount'}</td>
+                    <td>${coupon.type === 'percent' ? coupon.value + '%' : formatCurrency(coupon.value)}</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                    <td>${formatDate(coupon.createdAt)}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCoupon('${coupon.code}')">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Modal Functions
+        function openCouponModal() {
+            document.getElementById('coupon-modal').classList.add('active');
+            document.getElementById('coupon-form').reset();
+        }
+
+        function closeCouponModal() {
+            document.getElementById('coupon-modal').classList.remove('active');
+        }
+
+        function deleteCoupon(code) {
+            if (confirm(`Are you sure you want to delete coupon "${code}"?`)) {
+                storage.deleteCoupon(code);
+                renderCoupons();
+                showToast('Coupon deleted successfully', 'success');
+            }
+        }
+
+        // Form Submission
+        document.getElementById('coupon-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const code = document.getElementById('coupon-code').value.trim().toUpperCase();
+            const type = document.getElementById('coupon-type').value;
+            const value = parseFloat(document.getElementById('coupon-value').value);
+
+            if (!code) return;
+
+            storage.saveCoupon({
+                code,
+                type,
+                value
+            });
+
+            closeCouponModal();
+            renderCoupons();
+            showToast('Coupon saved successfully', 'success');
+        });
+
+        // Initial Render
+        renderCoupons();
+    </script>
+</body>
+
+</html>

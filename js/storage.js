@@ -9,7 +9,8 @@ class StorageManager {
             CURRENT_USER: 'ecommerce_current_user',
             ADMIN_SESSION: 'ecommerce_admin_session',
             PRODUCTS: 'ecommerce_products',
-            WISHLIST: 'ecommerce_wishlist'
+            WISHLIST: 'ecommerce_wishlist',
+            COUPONS: 'ecommerce_coupons'
         };
 
         this.initializeStorage();
@@ -34,6 +35,15 @@ class StorageManager {
         // Initialize wishlist if not exists
         if (!localStorage.getItem(this.KEYS.WISHLIST)) {
             localStorage.setItem(this.KEYS.WISHLIST, JSON.stringify([]));
+        }
+
+        // Initialize coupons if not exists (seed with defaults for transition)
+        if (!localStorage.getItem(this.KEYS.COUPONS)) {
+            const defaultCoupons = [
+                { code: 'SAVE10', type: 'percent', value: 10, createdAt: new Date().toISOString() },
+                { code: 'FLAT500', type: 'fixed', value: 500, createdAt: new Date().toISOString() }
+            ];
+            localStorage.setItem(this.KEYS.COUPONS, JSON.stringify(defaultCoupons));
         }
     }
 
@@ -130,6 +140,38 @@ class StorageManager {
     isInWishlist(productId) {
         const wishlist = this.getWishlist();
         return wishlist.some(item => item.id === productId);
+    }
+
+    // Coupon Methods
+    getCoupons() {
+        const coupons = localStorage.getItem(this.KEYS.COUPONS);
+        return coupons ? JSON.parse(coupons) : [];
+    }
+
+    saveCoupon(coupon) {
+        const coupons = this.getCoupons();
+        const existingIndex = coupons.findIndex(c => c.code === coupon.code);
+
+        const newCoupon = {
+            ...coupon,
+            createdAt: existingIndex >= 0 ? coupons[existingIndex].createdAt : new Date().toISOString()
+        };
+
+        if (existingIndex >= 0) {
+            coupons[existingIndex] = newCoupon;
+        } else {
+            coupons.push(newCoupon);
+        }
+
+        localStorage.setItem(this.KEYS.COUPONS, JSON.stringify(coupons));
+        return newCoupon;
+    }
+
+    deleteCoupon(code) {
+        const coupons = this.getCoupons();
+        const updatedCoupons = coupons.filter(c => c.code !== code);
+        localStorage.setItem(this.KEYS.COUPONS, JSON.stringify(updatedCoupons));
+        return updatedCoupons;
     }
 
     // Order Methods
