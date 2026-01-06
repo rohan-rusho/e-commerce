@@ -2,103 +2,106 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Confirmation - GreenMart</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation - GreenMart</title>
 
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/components.css">
-    <style>
-        .confirmation-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: var(--spacing-3xl) var(--spacing-lg);
-            text-align: center;
-        }
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .confirmation-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: var(--spacing-3xl) var(--spacing-lg);
+      text-align: center;
+    }
 
-        .success-icon {
-            font-size: 5rem;
-            margin-bottom: var(--spacing-lg);
-            animation: scaleIn 0.5s ease-out;
-        }
+    .success-icon {
+      font-size: 5rem;
+      margin-bottom: var(--spacing-lg);
+      animation: scaleIn 0.5s ease-out;
+    }
 
-        @keyframes scaleIn {
-            from {
-                transform: scale(0);
-            }
+    @keyframes scaleIn {
+      from {
+        transform: scale(0);
+      }
 
-            to {
-                transform: scale(1);
-            }
-        }
+      to {
+        transform: scale(1);
+      }
+    }
 
-        .order-details {
-            background: var(--color-white);
-            border-radius: var(--radius-lg);
-            padding: var(--spacing-2xl);
-            margin: var(--spacing-2xl) 0;
-            text-align: left;
-            box-shadow: var(--shadow-md);
-        }
+    .order-details {
+      background: var(--color-white);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-2xl);
+      margin: var(--spacing-2xl) 0;
+      text-align: left;
+      box-shadow: var(--shadow-md);
+    }
 
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: var(--spacing-md) 0;
-            border-bottom: 1px solid var(--color-gray-200);
-        }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--spacing-md) 0;
+      border-bottom: 1px solid var(--color-gray-200);
+    }
 
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-    </style>
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+  </style>
 </head>
 
 <body>
-    <header id="header"></header>
+  <header id="header"></header>
 
-    <main>
-        <div class="confirmation-container">
-            <div class="success-icon">✅</div>
-            <h1>Order Confirmed!</h1>
-            <p style="font-size: 1.25rem; color: var(--color-gray-600); margin-bottom: var(--spacing-2xl);">
-                Thank you for your purchase. Your order has been received.
-            </p>
+  <main>
+    <div class="confirmation-container">
+      <div class="success-icon">✅</div>
+      <h1>Order Confirmed!</h1>
+      <p style="font-size: 1.25rem; color: var(--color-gray-600); margin-bottom: var(--spacing-2xl);">
+        Thank you for your purchase. Your order has been received.
+      </p>
 
-            <div id="order-details" class="order-details"></div>
+      <div id="order-details" class="order-details"></div>
 
-            <div
-                style="display: flex; gap: var(--spacing-md); justify-content: center; margin-top: var(--spacing-2xl);">
-                <a href="index.html" class="btn btn-primary">Continue Shopping</a>
-                <a href="products.html" class="btn btn-secondary">Browse Products</a>
-            </div>
-        </div>
-    </main>
+      <div style="display: flex; gap: var(--spacing-md); justify-content: center; margin-top: var(--spacing-2xl);">
+        <button onclick="downloadInvoice(orderId)" class="btn btn-primary"
+          style="background-color: var(--color-accent);">Download Invoice</button>
+        <a href="index.html" class="btn btn-primary">Continue Shopping</a>
+        <a href="products.html" class="btn btn-secondary">Browse Products</a>
+      </div>
+    </div>
+  </main>
 
-    <footer id="footer"></footer>
+  <footer id="footer"></footer>
 
-    <script src="data/products.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/storage.js"></script>
-    <script src="js/productService.js"></script>
-    <script src="js/cart.js"></script>
-    <script src="js/components.js"></script>
-    <script src="js/main.js"></script>
+  <script src="data/products.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/productService.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/main.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="js/invoice.js"></script>
 
-    <script>
-        const orderId = getUrlParameter('id');
-        const order = storage.getOrderById(orderId);
+  <script>
+    const orderId = getUrlParameter('id');
+    const order = storage.getOrderById(orderId);
 
-        if (!order) {
-            document.querySelector('.confirmation-container').innerHTML = `
+    if (!order) {
+      document.querySelector('.confirmation-container').innerHTML = `
         <div class="empty-state">
           <h2>Order not found</h2>
           <p>We couldn't find the order you're looking for.</p>
           <a href="index.html" class="btn btn-primary">Go to Homepage</a>
         </div>
       `;
-        } else {
-            document.getElementById('order-details').innerHTML = `
+    } else {
+      document.getElementById('order-details').innerHTML = `
         <h3 style="margin-bottom: var(--spacing-lg);">Order Details</h3>
         
         <div class="detail-row">
@@ -168,8 +171,8 @@
         </p>
         ` : ''}
       `;
-        }
-    </script>
+    }
+  </script>
 </body>
 
 </html>
