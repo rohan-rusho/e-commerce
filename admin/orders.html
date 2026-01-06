@@ -2,108 +2,109 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Orders - Admin</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Orders - Admin</title>
+  <link rel="icon" href="../images/favicon.png" type="image/png">
 
-    <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="../css/components.css">
-    <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="admin.css">
 </head>
 
 <body>
-    <div class="admin-layout">
-        <aside class="admin-sidebar">
-            <div class="admin-logo">
-                <h2 style="color: var(--color-primary); margin: 0;">🌿 GreenMart</h2>
-                <p style="font-size: 0.875rem; color: var(--color-gray-600); margin: 0.25rem 0 0 0;">Admin Panel</p>
-            </div>
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-logo">
+        <h2 style="color: var(--color-primary); margin: 0;">🌿 GreenMart</h2>
+        <p style="font-size: 0.875rem; color: var(--color-gray-600); margin: 0.25rem 0 0 0;">Admin Panel</p>
+      </div>
 
-            <nav class="admin-nav">
-                <a href="dashboard.html" class="admin-nav-link">📊 Dashboard</a>
-                <a href="products.html" class="admin-nav-link">📦 Products</a>
-                <a href="orders.html" class="admin-nav-link active">🛒 Orders</a>
-                <a href="categories.html" class="admin-nav-link">🏷️ Categories</a>
-                <a href="#" class="admin-nav-link" onclick="logout()">🚪 Logout</a>
-            </nav>
-        </aside>
+      <nav class="admin-nav">
+        <a href="dashboard.html" class="admin-nav-link">📊 Dashboard</a>
+        <a href="products.html" class="admin-nav-link">📦 Products</a>
+        <a href="orders.html" class="admin-nav-link active">🛒 Orders</a>
+        <a href="categories.html" class="admin-nav-link">🏷️ Categories</a>
+        <a href="#" class="admin-nav-link" onclick="logout()">🚪 Logout</a>
+      </nav>
+    </aside>
 
-        <main class="admin-main">
-            <div class="admin-header">
-                <h1 style="margin: 0;">Order Management</h1>
-            </div>
+    <main class="admin-main">
+      <div class="admin-header">
+        <h1 style="margin: 0;">Order Management</h1>
+      </div>
 
-            <div class="toolbar">
-                <div class="search-box">
-                    <input type="search" id="search-orders" placeholder="Search orders..." onkeyup="searchOrders()">
-                </div>
-                <select class="select" id="filter-status" onchange="filterOrders()">
-                    <option value="">All Statuses</option>
-                    <option value="pending">Pending</option>
-                    <option value="processing">Processing</option>
-                    <option value="shipped">Shipped</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="cancelled">Cancelled</option>
-                </select>
-            </div>
-
-            <div class="data-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Customer</th>
-                            <th>Date</th>
-                            <th>Items</th>
-                            <th>Total</th>
-                            <th>Payment</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="orders-table-body"></tbody>
-                </table>
-            </div>
-        </main>
-    </div>
-
-    <!-- Order Detail Modal -->
-    <div class="modal-overlay" id="order-modal">
-        <div class="modal" style="max-width: 900px;">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modal-title">Order Details</h3>
-                <button class="modal-close" onclick="closeOrderModal()">&times;</button>
-            </div>
-            <div class="modal-body" id="order-details"></div>
+      <div class="toolbar">
+        <div class="search-box">
+          <input type="search" id="search-orders" placeholder="Search orders..." onkeyup="searchOrders()">
         </div>
+        <select class="select" id="filter-status" onchange="filterOrders()">
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="processing">Processing</option>
+          <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div class="data-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="orders-table-body"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- Order Detail Modal -->
+  <div class="modal-overlay" id="order-modal">
+    <div class="modal" style="max-width: 900px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Order Details</h3>
+        <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="order-details"></div>
     </div>
+  </div>
 
-    <script src="../data/products.js"></script>
-    <script src="../js/utils.js"></script>
-    <script src="../js/storage.js"></script>
-    <script src="../js/productService.js"></script>
+  <script src="../data/products.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/productService.js"></script>
 
-    <script>
-        if (!storage.isAdminLoggedIn()) window.location.href = 'login.html';
+  <script>
+    if (!storage.isAdminLoggedIn()) window.location.href = 'login.html';
 
-        let allOrders = storage.getOrders();
-        let filteredOrders = [...allOrders];
+    let allOrders = storage.getOrders();
+    let filteredOrders = [...allOrders];
 
-        function renderOrders() {
-            const tbody = document.getElementById('orders-table-body');
+    function renderOrders() {
+      const tbody = document.getElementById('orders-table-body');
 
-            if (filteredOrders.length === 0) {
-                tbody.innerHTML = `
+      if (filteredOrders.length === 0) {
+        tbody.innerHTML = `
           <tr>
             <td colspan="8" style="text-align: center; padding: var(--spacing-2xl);">
               No orders found
             </td>
           </tr>
         `;
-                return;
-            }
+        return;
+      }
 
-            tbody.innerHTML = filteredOrders.reverse().map(order => `
+      tbody.innerHTML = filteredOrders.reverse().map(order => `
         <tr>
           <td><strong>${order.id}</strong></td>
           <td>
@@ -135,42 +136,42 @@
           </td>
         </tr>
       `).join('');
-        }
+    }
 
-        function searchOrders() {
-            const query = document.getElementById('search-orders').value.toLowerCase();
-            filteredOrders = allOrders.filter(order =>
-                order.id.toLowerCase().includes(query) ||
-                order.customer.firstName.toLowerCase().includes(query) ||
-                order.customer.lastName.toLowerCase().includes(query) ||
-                order.customer.phone.includes(query)
-            );
-            filterOrders();
-        }
+    function searchOrders() {
+      const query = document.getElementById('search-orders').value.toLowerCase();
+      filteredOrders = allOrders.filter(order =>
+        order.id.toLowerCase().includes(query) ||
+        order.customer.firstName.toLowerCase().includes(query) ||
+        order.customer.lastName.toLowerCase().includes(query) ||
+        order.customer.phone.includes(query)
+      );
+      filterOrders();
+    }
 
-        function filterOrders() {
-            const status = document.getElementById('filter-status').value;
-            const query = document.getElementById('search-orders').value.toLowerCase();
+    function filterOrders() {
+      const status = document.getElementById('filter-status').value;
+      const query = document.getElementById('search-orders').value.toLowerCase();
 
-            filteredOrders = allOrders.filter(order => {
-                const matchesSearch = !query ||
-                    order.id.toLowerCase().includes(query) ||
-                    order.customer.firstName.toLowerCase().includes(query) ||
-                    order.customer.lastName.toLowerCase().includes(query);
+      filteredOrders = allOrders.filter(order => {
+        const matchesSearch = !query ||
+          order.id.toLowerCase().includes(query) ||
+          order.customer.firstName.toLowerCase().includes(query) ||
+          order.customer.lastName.toLowerCase().includes(query);
 
-                const matchesStatus = !status || order.status === status;
+        const matchesStatus = !status || order.status === status;
 
-                return matchesSearch && matchesStatus;
-            });
+        return matchesSearch && matchesStatus;
+      });
 
-            renderOrders();
-        }
+      renderOrders();
+    }
 
-        function viewOrder(orderId) {
-            const order = storage.getOrderById(orderId);
-            if (!order) return;
+    function viewOrder(orderId) {
+      const order = storage.getOrderById(orderId);
+      if (!order) return;
 
-            document.getElementById('order-details').innerHTML = `
+      document.getElementById('order-details').innerHTML = `
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl); margin-bottom: var(--spacing-xl);">
           <div>
             <h4>Customer Information</h4>
@@ -255,32 +256,32 @@
         ` : ''}
       `;
 
-            document.getElementById('order-modal').classList.add('active');
-        }
+      document.getElementById('order-modal').classList.add('active');
+    }
 
-        function closeOrderModal() {
-            document.getElementById('order-modal').classList.remove('active');
-        }
+    function closeOrderModal() {
+      document.getElementById('order-modal').classList.remove('active');
+    }
 
-        function updateOrderStatus(orderId, newStatus) {
-            if (!newStatus) return;
+    function updateOrderStatus(orderId, newStatus) {
+      if (!newStatus) return;
 
-            storage.updateOrderStatus(orderId, newStatus);
-            allOrders = storage.getOrders();
-            filteredOrders = [...allOrders];
-            filterOrders();
-            showToast(`Order status updated to ${newStatus}`, 'success');
-        }
+      storage.updateOrderStatus(orderId, newStatus);
+      allOrders = storage.getOrders();
+      filteredOrders = [...allOrders];
+      filterOrders();
+      showToast(`Order status updated to ${newStatus}`, 'success');
+    }
 
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                storage.clearAdminSession();
-                window.location.href = 'login.html';
-            }
-        }
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        storage.clearAdminSession();
+        window.location.href = 'login.html';
+      }
+    }
 
-        renderOrders();
-    </script>
+    renderOrders();
+  </script>
 </body>
 
 </html>

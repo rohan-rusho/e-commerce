@@ -2,12 +2,12 @@
 
 // Render Header
 function renderHeader() {
-    const header = document.getElementById('header');
-    if (!header) return;
+  const header = document.getElementById('header');
+  if (!header) return;
 
-    const cartCount = storage.getCartItemCount();
+  const cartCount = storage.getCartItemCount();
 
-    header.innerHTML = `
+  header.innerHTML = `
     <div class="header-container">
       <div class="container">
         <div class="header-content">
@@ -47,31 +47,31 @@ function renderHeader() {
     </div>
   `;
 
-    // Setup search functionality
-    const searchInput = document.getElementById('search-input');
-    const searchBtn = document.querySelector('.search-btn');
+  // Setup search functionality
+  const searchInput = document.getElementById('search-input');
+  const searchBtn = document.querySelector('.search-btn');
 
-    const performSearch = () => {
-        const query = searchInput.value.trim();
-        if (query) {
-            window.location.href = `products.html?search=${encodeURIComponent(query)}`;
-        }
-    };
+  const performSearch = () => {
+    const query = searchInput.value.trim();
+    if (query) {
+      window.location.href = `products.html?search=${encodeURIComponent(query)}`;
+    }
+  };
 
-    searchBtn.addEventListener('click', performSearch);
-    searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') performSearch();
-    });
+  searchBtn.addEventListener('click', performSearch);
+  searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') performSearch();
+  });
 }
 
 // Render Footer
 function renderFooter() {
-    const footer = document.getElementById('footer');
-    if (!footer) return;
+  const footer = document.getElementById('footer');
+  if (!footer) return;
 
-    const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear();
 
-    footer.innerHTML = `
+  footer.innerHTML = `
     <div class="footer-container">
       <div class="container">
         <div class="footer-grid">
@@ -120,7 +120,14 @@ function renderFooter() {
         
         <div class="footer-bottom">
           <p>&copy; ${currentYear} GreenMart. All rights reserved.</p>
-          <p>Built with ❤️ for Bangladesh</p>
+          <div style="margin-top: var(--spacing-sm);">
+            <p style="margin-bottom: var(--spacing-xs);">Built with ❤️ for Bangladesh by <strong>Rohan Rusho</strong></p>
+            <div style="display: flex; gap: var(--spacing-md); justify-content: center; margin-top: var(--spacing-sm);">
+                <a href="https://www.facebook.com/eita.rohan" target="_blank" style="color: var(--color-gray-500); hover: var(--color-primary);" title="Facebook">Facebook</a>
+                <a href="https://www.instagram.com/rohan.rusho" target="_blank" style="color: var(--color-gray-500); hover: var(--color-primary);" title="Instagram">Instagram</a>
+                <a href="https://github.com/rohan-rusho" target="_blank" style="color: var(--color-gray-500); hover: var(--color-primary);" title="GitHub">GitHub</a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -129,13 +136,13 @@ function renderFooter() {
 
 // Render Product Card
 function renderProductCard(product) {
-    const stockStatus = getStockStatus(product.stock);
-    const discountBadge = product.discount > 0 ?
-        `<div class="product-badge sale">${product.discount}% OFF</div>` : '';
-    const newBadge = product.newArrival ?
-        `<div class="product-badge new" style="left: ${product.discount > 0 ? '80px' : 'var(--spacing-md)'};">NEW</div>` : '';
+  const stockStatus = getStockStatus(product.stock);
+  const discountBadge = product.discount > 0 ?
+    `<div class="product-badge sale">${product.discount}% OFF</div>` : '';
+  const newBadge = product.newArrival ?
+    `<div class="product-badge new" style="left: ${product.discount > 0 ? '80px' : 'var(--spacing-md)'};">NEW</div>` : '';
 
-    return `
+  return `
     <div class="product-card" onclick="window.location.href='product.html?id=${product.id}'">
       <div class="product-card-img-wrapper">
         ${discountBadge}
@@ -171,14 +178,14 @@ function renderProductCard(product) {
 
 // Toggle mobile menu
 function toggleMobileMenu() {
-    const menu = document.getElementById('mobile-menu');
-    if (menu) {
-        menu.classList.toggle('active');
-    }
+  const menu = document.getElementById('mobile-menu');
+  if (menu) {
+    menu.classList.toggle('active');
+  }
 }
 
 // Initialize components on page load
 document.addEventListener('DOMContentLoaded', () => {
-    renderHeader();
-    renderFooter();
+  renderHeader();
+  renderFooter();
 });
